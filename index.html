@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> Talkou </title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 1.8em;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 600px;
+      height: 150px;
+      margin: 15px 0;
+      padding: 10px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      border: none;
+      resize: vertical;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 0.95em;
+    }
+
+    input[type="range"] {
+      width: 200px;
+    }
+
+    select, button {
+      padding: 10px 15px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    button {
+      background: #1e88e5;
+      color: white;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 0.8em;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>🗣️ Talkou </h1>
+
+  <textarea id="text" placeholder="Type or paste text here..."></textarea>
+
+  <div class="controls">
+    <div>
+      <label for="voiceSelect">🎤 Voice:</label>
+      <select id="voiceSelect"></select>
+    </div>
+    <div>
+      <label>🔊 Volume:</label>
+      <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+    </div>
+    <div>
+      <label>🎼 Pitch:</label>
+      <input type="range" id="pitch" min="0" max="2" step="0.1" value="1">
+    </div>
+    <div>
+      <label for="rate">🕐 Speed (0.5x – 2x):</label>
+      <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div>
+      <button onclick="speak()">🔈 Speak</button>
+      <button onclick="stopSpeech()">🛑 Stop</button>
+      <button onclick="clearText()">🧹 Clear</button>
+    </div>
+  </div>
+
+  <div class="footer">© Manik Roy 2025 — Works Offline </div>
+
+  <script>
+    const textEl = document.getElementById("text");
+    const voiceSelect = document.getElementById("voiceSelect");
+    const pitch = document.getElementById("pitch");
+    const rate = document.getElementById("rate");
+    const volume = document.getElementById("volume");
+
+    let voices = [];
+
+    function populateVoices() {
+      voices = speechSynthesis.getVoices().filter(v =>
+        v.lang.includes("en") ||
+        v.lang.includes("hi") ||
+        v.lang.includes("ta") ||
+        v.lang.includes("te") ||
+        v.lang.includes("kn") ||
+        v.lang.includes("ml") ||
+        v.lang.includes("gu")
+      );
+      voiceSelect.innerHTML = '';
+      voices.forEach((voice, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    function speak() {
+      const text = textEl.value.trim();
+      if (!text) return;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoice = voices[voiceSelect.value];
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.pitch = parseFloat(pitch.value);
+      utterance.rate = parseFloat(rate.value);
+      utterance.volume = parseFloat(volume.value);
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeech() {
+      speechSynthesis.cancel();
+    }
+
+    function clearText() {
+      textEl.value = '';
+    }
+  </script>
+</body>
+</html>
